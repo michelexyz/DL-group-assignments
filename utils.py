@@ -10,6 +10,12 @@ import torch.nn.functional as F
 
 from tqdm import tqdm
 
+
+# Calculate the total number of parameters
+def count_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params
+
 def load_mnist_data():
 
     transform = transforms.Compose([transforms.ToTensor()])

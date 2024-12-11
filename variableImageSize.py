@@ -95,3 +95,8 @@ class VariableInputNetwork(nn.Module):
         # Fully connected layer
         logits = self.fc(x)        # Output: (batch, num_classes)
         return logits
+
+# Calculate the total number of parameters
+def count_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params
