@@ -10,6 +10,30 @@ import torch.nn.functional as F
 
 from tqdm import tqdm
 
+def load_mnist_data():
+
+    transform = transforms.Compose([transforms.ToTensor()])
+
+    train_data = datasets.MNIST(root='data', train=True, download=True, transform=transform)
+    test_data = datasets.MNIST(root='data', train=False, download=True, transform=transform)
+
+    train_loader = DataLoader(train_data, batch_size=len(train_data))
+    test_loader = DataLoader(test_data, batch_size=len(test_data))
+
+    x_train_data, y_train_data = next(iter(train_loader))
+    x_test_data, y_test_data = next(iter(test_loader))
+
+    return (x_train_data, y_train_data), (x_test_data, y_test_data)
+
+    #Split the training data into 50 000 training instances and 10 000 validation instances
+
+def split_data(x_train_data, y_train_data):
+
+    x_train_data, x_val_data = x_train_data[:50000], x_train_data[50000:]
+    y_train_data, y_val_data = y_train_data[:50000], y_train_data[50000:]
+
+    return (x_train_data, y_train_data), (x_val_data, y_val_data)
+
 
 # Define the neural network
 class MNISTConvNet(nn.Module):
