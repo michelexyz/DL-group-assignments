@@ -87,14 +87,12 @@ def train(model, x_train, y_train, x_val, y_val, optimizer, criterion, epochs=10
     val_evaluations = np.zeros((epochs, 2))
 
 
-
     for epoch in range(epochs):
         model.train()
         for i in tqdm(range(0, len(x_train), batch_size), desc=f'Batches for epoch {epoch + 1}/{epochs}'):
 
-            to = min(i + batch_size, len(x_train))
-            x_batch = x_train[i:to]
-            y_batch = y_train[i:to]
+            x_batch = x_train[i:i + batch_size]
+            y_batch = y_train[i:i + batch_size]
 
             optimizer.zero_grad()
             output = model(x_batch)
@@ -121,39 +119,42 @@ def train(model, x_train, y_train, x_val, y_val, optimizer, criterion, epochs=10
 
 def plot_results(first_epoch_running_loss, train_evaluations, val_evaluations):
 
-    # Plot first epoch running loss
+    ## Plot first epoch running loss ##
     plt.figure(figsize=(10, 6))
     plt.plot(first_epoch_running_loss, label="Single batch-averaged Loss")
     conv_size = 100
     ma_loss = np.convolve(first_epoch_running_loss, np.ones(conv_size), 'valid') / conv_size
-    plt.plot(np.arange(len(ma_loss))+conv_size/2, ma_loss, label="Moving Average Loss")
+    plt.plot(np.arange(len(ma_loss))+conv_size/2, ma_loss, label="Moving Average Loss", color='orangered')
     plt.xlabel("Batches")
     plt.ylabel("Loss")
+    plt.tick_params(axis='y', labelcolor='tab:red')
     plt.legend()
     plt.show()
 
-    # Plot training and validation loss
+    ## Plot training and validation los ##
     plt.figure(figsize=(10, 6))
-    plt.plot(train_evaluations[:, 0], label='Training Loss')
-    plt.plot(val_evaluations[:, 0], label='Validation Loss')
+    plt.plot(train_evaluations[:, 0], label='Training Loss', color='lightcoral')
+    plt.plot(val_evaluations[:, 0], label='Validation Loss', color='orangered')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('Training and Validation Loss Over Epochs')
 
     # adjust x labels to start from 1 and be integers
     plt.xticks(np.arange(0, len(train_evaluations) , 1), np.arange(1, len(train_evaluations) + 1, 1))
+    plt.tick_params(axis='y', labelcolor='tab:red')
     plt.legend()
     plt.show()
 
-    # Plot training and validation accuracy
+    ## Plot training and validation accuracy ##
     plt.figure(figsize=(10, 6))
-    plt.plot(train_evaluations[:, 1], label='Training Accuracy')
-    plt.plot(val_evaluations[:, 1], label='Validation Accuracy')
+    plt.plot(train_evaluations[:, 1], label='Training Accuracy', color='lightblue')
+    plt.plot(val_evaluations[:, 1], label='Validation Accuracy', color='dodgerblue')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
     plt.title('Training and Validation Accuracy Over Epochs')
     plt.xticks(np.arange(0, len(train_evaluations) , 1), np.arange(1, len(train_evaluations) + 1, 1))
+
+    plt.tick_params(axis='y', labelcolor='tab:blue')
     plt.legend()
     plt.show()
-
 
