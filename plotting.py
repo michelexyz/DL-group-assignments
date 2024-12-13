@@ -21,8 +21,6 @@ def plot_results(first_epoch_running_loss, train_evaluations, val_evaluations):
     plt.plot(val_evaluations[:, 0], label='Validation Loss', color='orangered')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Training and Validation Loss Over Epochs')
-
     # adjust x labels to start from 1 and be integers
     plt.xticks(np.arange(0, len(train_evaluations) , 1), np.arange(1, len(train_evaluations) + 1, 1))
     plt.tick_params(axis='y', labelcolor='tab:red')
@@ -35,7 +33,6 @@ def plot_results(first_epoch_running_loss, train_evaluations, val_evaluations):
     plt.plot(val_evaluations[:, 1], label='Validation Accuracy', color='dodgerblue')
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy')
-    plt.title('Training and Validation Accuracy Over Epochs')
     plt.xticks(np.arange(0, len(train_evaluations) , 1), np.arange(1, len(train_evaluations) + 1, 1))
 
     plt.tick_params(axis='y', labelcolor='tab:blue')
