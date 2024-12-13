@@ -50,7 +50,7 @@ def load_images_by_resolution(root_dir):
 
 
 class VariableInputNetwork(nn.Module):
-    def __init__(self, num_classes=10, N=64, pooling_type='max'):
+    def __init__(self, num_classes=10, N=81, pooling_type='max'):
         """
         Args:
         - num_classes: Number of output classes (default=10 for MNIST).
@@ -221,9 +221,9 @@ def train_max_pooling(train_data_by_resolution, test_data_by_resolution, num_epo
         print(f"\nTraining with {pooling_type.upper()} pooling:")
         
         # Initialize model, criterion, and optimizer
-        model = VariableInputNetwork(pooling_type=pooling_type).to(device)
+        model = VariableInputNetwork(pooling_type=pooling_type,N=81).to(device)
         criterion = nn.CrossEntropyLoss()
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        optimizer = optim.Adam(model.parameters(), lr=0.0009)
         
         # Training
         for epoch in range(num_epochs):
