@@ -77,6 +77,20 @@ def calculate_loss_and_accuracy(model, x_data, y_data, criterion, batch):
             correct += pred.eq(y_batch.view_as(pred)).sum().item()
     return loss / len(x_data), correct / len(x_data)
 
+def confusion_matrix(model, x_data, y_data, batch):
+    model.eval()
+    confusion_matrix = np.zeros((10, 10))
+    with torch.no_grad():
+        for i in range(0, len(x_data), batch):
+            to = min(i + batch, len(x_data))
+            x_batch = x_data[i:to]
+            y_batch = y_data[i:to]
+            output = model(x_batch)
+            pred = output.argmax(dim=1, keepdim=True)
+            for j in range(len(pred)):
+                confusion_matrix[y_batch[j]][pred[j]] += 1
+    return confusion_matrix
+
 # Training loop that computes the running loss per epoch and validation loss and accuracy per epoch
 def train(model, x_train, y_train, x_val, y_val, optimizer, criterion, epochs=10, batch_size=64):
 

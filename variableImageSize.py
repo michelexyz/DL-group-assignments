@@ -104,7 +104,7 @@ def count_parameters(model):
 
 
 # Define a training function for one resolution
-def train_on_resolution(model, data, labels, criterion, optimizer, device):
+def train_on_resolution(model, data, labels, criterion, optimizer, device, batch_size=64):
     model.train()
     running_loss = 0.0
     correct = 0
@@ -114,8 +114,7 @@ def train_on_resolution(model, data, labels, criterion, optimizer, device):
     perm = torch.randperm(data.size(0))
     data, labels = data[perm], labels[perm]
 
-    # Process in batches
-    batch_size = 64
+    
     for i in range(0, data.size(0), batch_size):
         inputs = data[i:i+batch_size].to(device)
         targets = labels[i:i+batch_size].to(device)
@@ -136,14 +135,14 @@ def train_on_resolution(model, data, labels, criterion, optimizer, device):
     return epoch_loss, epoch_acc
 
 # Evaluation function
-def evaluate_on_resolution(model, data, labels, criterion, device):
+def evaluate_on_resolution(model, data, labels, criterion, device, batch_size=64):
     model.eval()
     running_loss = 0.0
     correct = 0
     total = 0
 
     with torch.no_grad():
-        batch_size = 64
+        
         for i in range(0, data.size(0), batch_size):
             inputs = data[i:i+batch_size].to(device)
             targets = labels[i:i+batch_size].to(device)
@@ -159,6 +158,21 @@ def evaluate_on_resolution(model, data, labels, criterion, device):
     epoch_loss = running_loss / total
     epoch_acc = 100.0 * correct / total
     return epoch_loss, epoch_acc
+
+def confusion_matrix(model, data, labels, device, batch_size=64):
+    model.eval()
+    confusion_matrix = torch.zeros(10, 10)
+    with torch.no_grad():
+        for i in range(0, data.size(0), batch_size):
+            inputs = data[i:i+batch_size].to(device)
+            targets = labels[i:i+batch_size].to(device)
+            outputs = model(inputs)
+            _, predicted = outputs.max(1)
+            for t, p in zip(targets.view(-1), predicted.view(-1)):
+                confusion_matrix[t.long(), p.long()] += 1
+    return confusion_matrix
+
+
 
 # Training loop for all resolutions
 def train_on_all_resolutions(tensors_by_resolution, model, criterion, optimizer, device, epochs=5):
@@ -212,11 +226,12 @@ def train_and_compare_pooling(train_data_by_resolution, test_data_by_resolution,
     
     return results
 
-def train_max_pooling(train_data_by_resolution, test_data_by_resolution, num_epochs=5):
+def train_max_pooling(train_data_by_resolution, test_data_by_resolution, num_epochs=5, batch_size=64):
     pooling_methods = ['max']
     results = {}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    confusion_matrix_results = {}
     for pooling_type in pooling_methods:
         print(f"\nTraining with {pooling_type.upper()} pooling:")
         
@@ -230,17 +245,27 @@ def train_max_pooling(train_data_by_resolution, test_data_by_resolution, num_epo
             print(f"Epoch {epoch + 1}/{num_epochs}")
             for res, (train_data, train_labels) in train_data_by_resolution.items():
                 print(f"Training on resolution {res}x{res}:")
-                train_loss, train_acc = train_on_resolution(model, train_data, train_labels, criterion, optimizer, device)
+                train_loss, train_acc = train_on_resolution(model, train_data, train_labels, criterion, optimizer, device,batch_size)
                 print(f"  Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.2f}%")
             print("-" * 50)
         
         # Evaluation
         print(f"\nEvaluating {pooling_type.upper()} pooling on test data:")
         pooling_results = {}
+
+        
         for res, (test_data, test_labels) in test_data_by_resolution.items():
-            test_loss, test_acc = evaluate_on_resolution(model, test_data, test_labels, criterion, device)
+            test_loss, test_acc = evaluate_on_resolution(model, test_data, test_labels, criterion, device, batch_size)
             print(f"Resolution {res}x{res}: Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}%")
             pooling_results[res] = (test_loss, test_acc)
+
+            # Confusion Matrix
+            confusion_matrix_results[res] = confusion_matrix(model, test_data, test_labels, device, batch_size)
+
+        
+
+
+
         
         results[pooling_type] = pooling_results
 
@@ -250,7 +275,14 @@ def train_max_pooling(train_data_by_resolution, test_data_by_resolution, num_epo
         print(f"\n{pooling_type.upper()} Pooling:")
         for res, (loss, acc) in pooling_results.items():
             print(f"Resolution {res}x{res}: Test Loss = {loss:.4f}, Test Acc = {acc:.2f}%")
+
+    #aggregate confusion matrix
+    confusion_matrix_aggregate = torch.zeros(10, 10)
+
+    for res, cm in confusion_matrix_results.items():
+        confusion_matrix_aggregate += cm
+
     
-    return results
+    return results, confusion_matrix_aggregate, confusion_matrix_results
 
 # Run the training and comparison
