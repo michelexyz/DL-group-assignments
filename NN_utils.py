@@ -69,8 +69,8 @@ def calculate_loss_and_accuracy(model, x_data, y_data, criterion, batch):
     with torch.no_grad():
         for i in range(0, len(x_data), batch):
             to = min(i + batch, len(x_data))
-            x_batch = x_data[i:to]
-            y_batch = y_data[i:to]
+            x_batch = x_data[i:to].to("cuda")
+            y_batch = y_data[i:to].to("cuda")
             output = model(x_batch)
             loss += criterion(output, y_batch).item()
             pred = output.argmax(dim=1, keepdim=True)
@@ -104,8 +104,8 @@ def train(model, x_train, y_train, x_val, y_val, optimizer, criterion, epochs=10
         model.train()
         for i in tqdm(range(0, len(x_train), batch_size), desc=f'Batches for epoch {epoch + 1}/{epochs}'):
 
-            x_batch = x_train[i:i + batch_size]
-            y_batch = y_train[i:i + batch_size]
+            x_batch = x_train[i:i + batch_size].to("cuda")
+            y_batch = y_train[i:i + batch_size].to("cuda")
 
             optimizer.zero_grad()
             output = model(x_batch)
