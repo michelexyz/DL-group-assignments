@@ -30,6 +30,41 @@ def load_mnist_data():
 
     return (x_train_data, y_train_data), (x_test_data, y_test_data)
 
+def load_mnist_data_with_augmentations():
+    # Define augmentations for the training set
+    train_transform = transforms.Compose([
+        # transforms.RandomRotation(20),  # Randomly rotate images by ±10 degrees 
+        # transforms.ToTensor(),  # Convert images to tensors
+        # transforms.Normalize((0.5,), (0.5,))  # Normalize images to [-1, 1]
+        transforms.RandomAffine(degrees=15, translate=(0.1, 0.1), scale=(0.9, 1.1)),  # Rotation, translation, scaling
+        transforms.RandomPerspective(distortion_scale=0.1, p=0.5),  # Perspective distortion
+        transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.0)),  # Add Gaussian blur
+        transforms.ToTensor(),  # Convert to tensor
+        transforms.Normalize((0.5,), (0.5,))  # Normalize to [-1, 1]
+
+    ])
+    # Define transformations for the test set (no augmentations, just normalization)
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
+    ])
+
+    train_data = datasets.MNIST(root='data', train=True, download=True, transform=train_transform)
+    test_data = datasets.MNIST(root='data', train=False, download=True, transform=test_transform)
+
+    train_loader = DataLoader(train_data, batch_size=16)
+    test_loader = DataLoader(test_data, batch_size=len(test_data))
+    x_train_data = []
+    y_train_data = []
+    for image,label in train_loader:
+        x_train_data.append(image)
+        y_train_data.append(label)
+    x_train_data = torch.cat(x_train_data,dim=0)
+    y_train_data = torch.cat(y_train_data,dim=0)
+    print(x_train_data.shape)
+    x_test_data, y_test_data = next(iter(test_loader))
+
+    return (x_train_data, y_train_data), (x_test_data, y_test_data)
     #Split the training data into 50 000 training instances and 10 000 validation instances
 
 def split_data(x_train_data, y_train_data):
