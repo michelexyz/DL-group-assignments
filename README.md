@@ -1,5 +1,5 @@
 # Deep learning group assignments
-Repository for group assignments (3 and 4) from the Deep Learning course at the Vrije Universiteit taught by Peter Bloem, Michael Cochez and Shujian Yu.
+Repository for the group assignments (3 and 4) from the Deep Learning course at the Vrije Universiteit taught by Peter Bloem, Michael Cochez and Shujian Yu.
 ## Assignment 3
 This assignment was about Convolutional Neural Neworks, it was divided in three parts and we had to submit a PDF report with all our answers.
 ## Assignment 4
